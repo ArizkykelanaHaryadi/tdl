@@ -7,6 +7,16 @@
     <title>TDL</title>
     <link rel="stylesheet" href="src/output.css">
     <style>
+        /* Kelas kustom untuk garis coretan merah dan lebih tebal */
+        .strikethrough {
+            text-decoration: line-through;
+            text-decoration-color: red;
+            /* Mengatur warna garis coretan */
+            text-decoration-thickness: 3px;
+            /* Mengatur ketebalan garis coretan */
+        }
+
+
         .form-background {
             background-color: rgba(255, 255, 255, 0.15);
         }
@@ -72,13 +82,12 @@
                     Yes, Delete All
                 </button>
                 <button id="cancelDeleteAllButton"
-                    class="bg-gray-300 hover:bg-gray-500 text-black font-bold py-2 px-4 rounded">
-                    Cancel
+                    class="bg-gray-300 hover:bg-gray-500 text-black font-bold py-2 px-4 rounded mb-2">
+                    Cancel Delete
                 </button>
             </div>
         </div>
     </div>
-
 
     <!-- Bagian To Do List -->
     <div id="toDoSection" class="hidden flex-grow flex flex-col min-h-screen">

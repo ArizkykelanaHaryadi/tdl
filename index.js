@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const submitProfileButton = document.getElementById("submitProfile");
   const notificationPopup = document.getElementById("notificationPopup");
   const notificationMessage = document.getElementById("notificationMessage");
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const confirmDeleteAllButton = document.getElementById("confirmDeleteAllButton");
   const cancelDeleteAllButton = document.getElementById("cancelDeleteAllButton");
 
-  // Mengambil data profil dari localStorage
+  // Load profile data from localStorage
   const savedProfile = JSON.parse(localStorage.getItem("profile"));
   if (savedProfile) {
     document.getElementById("userName").textContent = savedProfile.name;
@@ -21,46 +21,47 @@ document.addEventListener("DOMContentLoaded", function () {
     toDoSection.classList.remove("hidden");
   }
 
-  // Mengambil data To Do dari localStorage
+  // Load To Do data from localStorage
   let todos = JSON.parse(localStorage.getItem("todos")) || [];
 
-  // Menangani pengaturan profil
-  submitProfileButton.addEventListener("click", function () {
+  // Handle profile settings
+  submitProfileButton.addEventListener("click", () => {
     const name = document.getElementById("name").value.trim();
     const jobTitle = document.getElementById("jobTitle").value.trim();
     const selectedAvatar = document.querySelector("input[name='avatar']:checked").value;
 
-    if (name === "" || jobTitle === "") {
+    if (!name || !jobTitle) {
       showNotification("Name and Job Title cannot be empty.");
       return;
     }
 
-    // Menyimpan informasi profil ke dalam localStorage
+    // Save profile to localStorage
     localStorage.setItem("profile", JSON.stringify({ name, jobTitle, avatar: selectedAvatar }));
 
-    // Menyimpan informasi profil ke dalam elemen
+    // Update profile elements
     document.getElementById("userName").textContent = name;
     document.getElementById("userJobTitle").textContent = jobTitle;
     document.getElementById("userAvatar").src = `img/${selectedAvatar}`;
 
-    // Menampilkan To Do Section dan menyembunyikan Profile Form
+    // Show To Do Section and hide Profile Form
     profileForm.classList.add("hidden");
     toDoSection.classList.remove("hidden");
 
     showNotification("Profile updated successfully!");
   });
 
-  closeNotificationButton.addEventListener("click", function () {
+  // Handle notification close
+  closeNotificationButton.addEventListener("click", () => {
     notificationPopup.classList.add("hidden");
   });
 
-  // Fungsi untuk menampilkan notifikasi
+  // Show notification function
   function showNotification(message) {
     notificationMessage.textContent = message;
     notificationPopup.classList.remove("hidden");
   }
 
-  // Mengelola To Do List
+  // Handle To Do submissions
   const toDoSubmitBtn = document.getElementById("toDoSubmitBtn");
   const toDoList = document.getElementById("toDoList");
   const toDoViewAll = document.getElementById("toDoViewAll");
@@ -68,8 +69,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const toDoViewOverdue = document.getElementById("toDoViewOverdue");
   const toDoDeleteAllBtn = document.getElementById("toDoDeleteAllBtn");
 
-  toDoSubmitBtn.addEventListener("click", function () {
-    const date = document.getElementById("toDoDate").value;
+  toDoSubmitBtn.addEventListener("click", () => {
+    const date = new Date(document.getElementById("toDoDate").value);
     const priority = document.getElementById("toDoPriority").value;
     const description = document.getElementById("toDoDesc").value.trim();
 
@@ -80,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const todo = {
       id: Date.now(),
-      date: new Date(date),
+      date,
       priority,
       description,
       status: "To Do"
@@ -99,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("toDoDesc").value = "";
   }
 
-  // Fungsi untuk merender daftar To Do
+  // Render To Do List
   function renderToDoList(filter = "All") {
     toDoList.innerHTML = "";
 
@@ -115,52 +116,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     filteredTodos.forEach(todo => {
-  const todoElement = document.createElement("div");
-  todoElement.classList.add("flex", "justify-between", "items-center", "bg-white", "rounded-md", "p-3", "mb-2");
+      const todoElement = document.createElement("div");
+      todoElement.classList.add("flex", "justify-between", "items-center", "bg-white", "rounded-md", "p-3", "mb-2");
 
-  // Tentukan kelas warna berdasarkan prioritas
-  let priorityColorClass;
-  switch (todo.priority.toLowerCase()) {
-    case 'low':
-      priorityColorClass = 'text-green-500 font-semibold'; 
-      break;
-    case 'medium':
-      priorityColorClass = 'text-yellow-500 font-semibold'; 
-      break;
-    case 'high':
-      priorityColorClass = 'text-red-500 font-semibold';
-      break;
+      // Priority color
+      const priorityColorClass = {
+        low: 'text-green-500 font-semibold',
+        medium: 'text-yellow-500 font-semibold',
+        high: 'text-red-500 font-semibold'
+      }[todo.priority.toLowerCase()] || '';
+
+      // Description class
+      const descriptionClass = todo.status === "Done" ? "strikethrough text-gray-600 font-bold" : "";
+
+      todoElement.innerHTML = `
+        <div>
+          <p class="font-bold ${descriptionClass}">${todo.description}</p>
+          <p class="text-sm ${priorityColorClass}">${todo.date.toLocaleDateString()} - ${todo.priority} Priority</p>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" class="mr-2 transform scale-150" id="checkbox-${todo.id}" ${todo.status === "Done" ? "checked" : ""}>
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" onclick="deleteTodo(${todo.id})">Delete</button>
+        </div>`;
+
+      const checkbox = todoElement.querySelector(`#checkbox-${todo.id}`);
+      checkbox.addEventListener("change", () => toggleTodoStatus(todo.id));
+
+      toDoList.appendChild(todoElement);
+    });
   }
 
-  todoElement.innerHTML = `
-    <div>
-      <p class="font-bold">${todo.description}</p>
-      <p class="text-sm ${priorityColorClass}">${todo.date.toLocaleDateString()} - ${todo.priority} Priority</p>
-    </div>
-    <div class="flex items-center">
-      <input type="checkbox" class="mr-2 transform scale-150" id="checkbox-${todo.id}" ${todo.status === "Done" ? "checked" : ""}>
-      <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" onclick="deleteTodo(${todo.id})">Delete</button>
-    </div>`;
-
-  const checkbox = todoElement.querySelector(`#checkbox-${todo.id}`);
-  checkbox.addEventListener("change", function () {
-    toggleTodoStatus(todo.id);
-  });
-
-  toDoList.appendChild(todoElement);
-});
-
-  }
-
-  // Fungsi untuk menghapus To Do
-  function deleteTodo(id) {
-    todos = todos.filter(todo => todo.id !== id);
-    localStorage.setItem("todos", JSON.stringify(todos));
-    renderToDoList();
-    showNotification("To Do deleted successfully!");
-  }
-
-  // Fungsi untuk mengganti status To Do
   function toggleTodoStatus(id) {
     todos = todos.map(todo => {
       if (todo.id === id) {
@@ -173,13 +158,20 @@ document.addEventListener("DOMContentLoaded", function () {
     showNotification("To Do status updated!");
   }
 
-  // Fungsi untuk menampilkan pop-up konfirmasi penghapusan semua To Do
-  toDoDeleteAllBtn.addEventListener("click", function () {
+  function deleteTodo(id) {
+    todos = todos.filter(todo => todo.id !== id);
+    localStorage.setItem("todos", JSON.stringify(todos));
+    renderToDoList();
+    showNotification("To Do deleted successfully!");
+  }
+
+  // Show confirmation popup for deleting all To Dos
+  toDoDeleteAllBtn.addEventListener("click", () => {
     confirmDeleteAllPopup.classList.remove("hidden");
   });
 
-  // Tombol konfirmasi dalam pop-up untuk menghapus semua To Do
-  confirmDeleteAllButton.addEventListener("click", function () {
+  // Confirm delete all To Dos
+  confirmDeleteAllButton.addEventListener("click", () => {
     todos = [];
     localStorage.setItem("todos", JSON.stringify(todos));
     renderToDoList();
@@ -187,23 +179,15 @@ document.addEventListener("DOMContentLoaded", function () {
     confirmDeleteAllPopup.classList.add("hidden");
   });
 
-  // Tombol batal dalam pop-up
-  cancelDeleteAllButton.addEventListener("click", function () {
+  // Cancel delete all To Dos
+  cancelDeleteAllButton.addEventListener("click", () => {
     confirmDeleteAllPopup.classList.add("hidden");
   });
 
-  // Menampilkan semua To Do
-  toDoViewAll.addEventListener("click", function () {
-    renderToDoList("All");
-  });
-
-  // Menampilkan To Do yang sudah selesai
-  toDoViewDone.addEventListener("click", function () {
-    renderToDoList("Done");
-  });
-
-  // Menampilkan To Do yang lewat jatuh tempo
-  toDoViewOverdue.addEventListener("click", function () {
+  // View filters
+  toDoViewAll.addEventListener("click", () => renderToDoList("All"));
+  toDoViewDone.addEventListener("click", () => renderToDoList("Done"));
+  toDoViewOverdue.addEventListener("click", () => {
     const today = new Date();
     todos.forEach(todo => {
       if (todo.date < today && todo.status !== "Done") {
@@ -214,14 +198,13 @@ document.addEventListener("DOMContentLoaded", function () {
     renderToDoList("Overdue");
   });
 
-  // Fungsi logout untuk mengembalikan ke form profil
-  logoutButton.addEventListener("click", function () {
+  // Handle logout
+  logoutButton.addEventListener("click", () => {
     localStorage.removeItem("profile");
-    localStorage.removeItem("todos");
     profileForm.classList.remove("hidden");
     toDoSection.classList.add("hidden");
   });
 
-  // Render daftar To Do saat halaman dimuat
+  // Initial render
   renderToDoList();
 });
