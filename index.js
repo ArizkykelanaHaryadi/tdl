@@ -100,50 +100,54 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("toDoDesc").value = "";
   }
 
-  // Render To Do List
   function renderToDoList(filter = "All") {
-    toDoList.innerHTML = "";
+  toDoList.innerHTML = "";
 
-    const filteredTodos = todos.filter(todo => {
-      if (filter === "Done") return todo.status === "Done";
-      if (filter === "Overdue") return todo.status === "Overdue";
-      return true;
-    });
+  const filteredTodos = todos.filter(todo => {
+    if (filter === "Done") return todo.status === "Done";
+    if (filter === "Overdue") return todo.status === "Overdue";
+    return true;
+  });
 
-    if (filteredTodos.length === 0) {
-      toDoList.innerHTML = "<p class='text-center font-extrabold text-white'>No To Dos available.</p>";
-      return;
-    }
+  if (filteredTodos.length === 0) {
+    toDoList.innerHTML = "<p class='text-center font-extrabold text-white'>No To Dos available.</p>";
+    return;
+  }
 
-    filteredTodos.forEach(todo => {
-      const todoElement = document.createElement("div");
-      todoElement.classList.add("flex", "justify-between", "items-center", "bg-white", "rounded-md", "p-3", "mb-2");
+  filteredTodos.forEach(todo => {
+    const todoElement = document.createElement("div");
+    todoElement.classList.add("flex", "justify-between", "items-center", "bg-white", "rounded-md", "p-3", "mb-2");
 
-      // Priority color
-      const priorityColorClass = {
-        low: 'text-green-500 font-semibold',
-        medium: 'text-yellow-500 font-semibold',
-        high: 'text-red-500 font-semibold'
-      }[todo.priority.toLowerCase()] || '';
+    // Priority color
+    const priorityColorClass = {
+      low: 'text-green-500 font-semibold',
+      medium: 'text-yellow-500 font-semibold',
+      high: 'text-red-500 font-semibold'
+    }[todo.priority.toLowerCase()] || '';
 
-      // Description class
-      const descriptionClass = todo.status === "Done" ? "strikethrough text-gray-600 font-bold" : "";
+    // Description class
+    const descriptionClass = todo.status === "Done" ? "strikethrough text-gray-600 font-bold" : "";
 
-      todoElement.innerHTML = `
-        <div>
-          <p class="font-bold ${descriptionClass}">${todo.description}</p>
-          <p class="text-sm ${priorityColorClass}">${todo.date.toLocaleDateString()} - ${todo.priority} Priority</p>
-        </div>
-        <div class="flex items-center">
-          <input type="checkbox" class="mr-2 transform scale-150" id="checkbox-${todo.id}" ${todo.status === "Done" ? "checked" : ""}>
-          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" onclick="deleteTodo(${todo.id})">Delete</button>
-        </div>`;
+    todoElement.innerHTML = `
+      <div>
+        <p class="font-bold ${descriptionClass}">${todo.description}</p>
+        <p class="text-sm ${priorityColorClass}">${todo.date.toLocaleDateString()} - ${todo.priority} Priority</p>
+      </div>
+      <div class="flex items-center">
+        <input type="checkbox" class="mr-2 transform scale-150" id="checkbox-${todo.id}" ${todo.status === "Done" ? "checked" : ""}>
+        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" data-id="${todo.id}">Delete</button>
+      </div>`;
 
-      const checkbox = todoElement.querySelector(`#checkbox-${todo.id}`);
-      checkbox.addEventListener("change", () => toggleTodoStatus(todo.id));
+    // Event listeners for checkboxes and delete buttons
+    const checkbox = todoElement.querySelector(`#checkbox-${todo.id}`);
+    checkbox.addEventListener("change", () => toggleTodoStatus(todo.id));
 
-      toDoList.appendChild(todoElement);
-    });
+    const deleteButton = todoElement.querySelector(`button[data-id="${todo.id}"]`);
+    deleteButton.addEventListener("click", () => deleteTodo(todo.id));
+
+    toDoList.appendChild(todoElement);
+  });
+
   }
 
   function toggleTodoStatus(id) {
